@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Map</title>
+    <!-- Replace YOUR_API_KEY_HERE with your actual Google Maps API key -->
+    <script>
+        const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY_HERE'; // ⬅️ PON TU API KEY AQUÍ
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        #map { height: 400px; width: 100%; border: 1px solid #ccc; }
+        .form-container { margin: 20px 0; }
+        .form-group { margin: 10px 0; }
+        label { display: inline-block; width: 100px; }
+        input[type="text"], input[type="number"] { width: 200px; padding: 5px; }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .locations-list { margin-top: 20px; }
+        .location-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Location Map Application</h1>
+    
+    <div class="form-container">
+        <h3>Add New Location</h3>
+        <form action="/api/locations" method="post" id="locationForm">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description">
+            </div>
+            <div class="form-group">
+                <label for="latitude">Latitude:</label>
+                <input type="number" id="latitude" name="latitude" step="any" required>
+            </div>
+            <div class="form-group">
+                <label for="longitude">Longitude:</label>
+                <input type="number" id="longitude" name="longitude" step="any" required>
+            </div>
+            <button type="submit">Add Location</button>
+        </form>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="locations-list">
+        <h3>Current Locations</h3>
+        <div id="locationsList"></div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 2,
+                center: {lat: 0, lng: 0}
+            });
+            
+            loadLocations();
+        }
+
+        function loadLocations() {
+            fetch('/api/locations')
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing markers
+                    markers.forEach(marker => marker.setMap(null));
+                    markers = [];
+                    
+                    // Add new markers
+                    data.forEach(location => {
+                        const marker = new google.maps.Marker({
+                            position: {lat: location.latitude, lng: location.longitude},
+                            map: map,
+                            title: location.name
+                        });
+                        
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: `<h4>${location.name}</h4><p>${location.description || 'No description'}</p>`
+                        });
+                        
+                        marker.addListener('click', () => {
+                            infoWindow.open(map, marker);
+                        });
+                        
+                        markers.push(marker);
+                    });
+                    
+                    // Update locations list
+                    updateLocationsList(data);
+                })
+                .catch(error => console.error('Error loading locations:', error));
+        }
+
+        function updateLocationsList(locations) {
+            const locationsList = document.getElementById('locationsList');
+            locationsList.innerHTML = '';
+            
+            if (locations.length === 0) {
+                locationsList.innerHTML = '<p>No locations added yet.</p>';
+                return;
+            }
+            
+            locations.forEach(location => {
+                const div = document.createElement('div');
+                div.className = 'location-item';
+                div.innerHTML = `
+                    <strong>${location.name}</strong><br>
+                    ${location.description || 'No description'}<br>
+                    <small>Lat: ${location.latitude}, Lng: ${location.longitude}</small>
+                `;
+                locationsList.appendChild(div);
+            });
+        }
+
+        document.getElementById('locationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const locationData = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                latitude: parseFloat(formData.get('latitude')),
+                longitude: parseFloat(formData.get('longitude'))
+            };
+            
+            fetch('/api/locations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(locationData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Location added:', data);
+                this.reset();
+                loadLocations();
+            })
+            .catch(error => console.error('Error adding location:', error));
+        });
+
+        // Function to load Google Maps
+        function loadGoogleMaps() {
+            if (GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') {
+                document.getElementById('map').innerHTML = 
+                    '<div style="padding: 20px; text-align: center; background-color: #fff3cd; border: 1px solid #ffeaa7;">' +
+                    '<p><strong>📌 Para ver el mapa:</strong></p>' +
+                    '<p>1. Ve a <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></p>' +
+                    '<p>2. Habilita "Maps JavaScript API"</p>' +
+                    '<p>3. Crea una API Key</p>' +
+                    '<p>4. Reemplaza "YOUR_API_KEY_HERE" en línea 9 con tu API key</p>' +
+                    '</div>';
+                return;
+            }
+            
+            // Load Google Maps script
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&libraries=&v=weekly`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+
+        // Initialize map when page loads
+        window.onload = function() {
+            loadGoogleMaps();
+            // Load locations regardless of map availability
+            loadLocations();
+        };
+    </script>
+</body>
+</html>
