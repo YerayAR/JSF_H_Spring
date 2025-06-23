@@ -4,69 +4,253 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Location Map</title>
-    <!-- Replace YOUR_API_KEY_HERE with your actual Google Maps API key -->
-    <script>
-        const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY_HERE'; // ⬅️ PON TU API KEY AQUÍ
-    </script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        #map { height: 400px; width: 100%; border: 1px solid #ccc; }
-        .form-container { margin: 20px 0; }
-        .form-group { margin: 10px 0; }
-        label { display: inline-block; width: 100px; }
-        input[type="text"], input[type="number"] { width: 200px; padding: 5px; }
-        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .locations-list { margin-top: 20px; }
-        .location-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        h1 { 
+            color: #2c3e50; 
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        #map { 
+            height: 450px; 
+            width: 100%; 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-container { 
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .form-container h3 {
+            color: #495057;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .form-group { 
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            flex: 1;
+        }
+        
+        label { 
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        input[type="text"], input[type="number"] { 
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .locations-list { 
+            margin-top: 20px;
+        }
+        
+        .locations-list h3 {
+            color: #495057;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .location-item { 
+            margin: 10px 0;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .location-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .coordinates-helper {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                min-width: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Location Map Application</h1>
-    
-    <div class="form-container">
-        <h3>Add New Location</h3>
-        <form action="/api/locations" method="post" id="locationForm">
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Gestor de Ubicaciones</h1>
+            <p>Aplicación con mapa GRATUITO usando OpenStreetMap</p>
+        </div>
+        
+        <div class="content">
+            <div class="coordinates-helper">
+                💡 <strong>Tip:</strong> Haz clic en cualquier lugar del mapa para seleccionar coordenadas automáticamente
             </div>
-            <div class="form-group">
-                <label for="description">Description:</label>
-                <input type="text" id="description" name="description">
+            
+            <div class="form-container">
+                <h3>✨ Agregar Nueva Ubicación</h3>
+                <form action="/api/locations" method="post" id="locationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">📍 Nombre:</label>
+                            <input type="text" id="name" name="name" placeholder="Ej: Mi Casa" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">📝 Descripción:</label>
+                            <input type="text" id="description" name="description" placeholder="Descripción opcional">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitude">🌐 Latitud:</label>
+                            <input type="number" id="latitude" name="latitude" step="any" placeholder="Ej: 40.4168" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="longitude">🌐 Longitud:</label>
+                            <input type="number" id="longitude" name="longitude" step="any" placeholder="Ej: -3.7038" required>
+                        </div>
+                    </div>
+                    <button type="submit">🚀 Agregar Ubicación</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="latitude">Latitude:</label>
-                <input type="number" id="latitude" name="latitude" step="any" required>
-            </div>
-            <div class="form-group">
-                <label for="longitude">Longitude:</label>
-                <input type="number" id="longitude" name="longitude" step="any" required>
-            </div>
-            <button type="submit">Add Location</button>
-        </form>
-    </div>
 
-    <div id="map"></div>
+            <div id="map"></div>
 
-    <div class="locations-list">
-        <h3>Current Locations</h3>
-        <div id="locationsList"></div>
+            <div class="locations-list">
+                <h3>📍 Ubicaciones Guardadas</h3>
+                <div id="locationsList"></div>
+            </div>
+        </div>
     </div>
 
     <script>
         let map;
         let markers = [];
 
-        // Inicializa el mapa de Google en la página
+        // Inicializa el mapa con Leaflet (OpenStreetMap - GRATIS!)
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 2,
-                center: {lat: 0, lng: 0}
-            });
+            // Crear el mapa centrado en el mundo
+            map = L.map('map').setView([20, 0], 2);
             
+            // Agregar tiles de OpenStreetMap (completamente gratis)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Cargar ubicaciones existentes
             loadLocations();
+            
+            // Agregar evento de click en el mapa para facilitar la selección de coordenadas
+            map.on('click', function(e) {
+                const lat = e.latlng.lat.toFixed(6);
+                const lng = e.latlng.lng.toFixed(6);
+                
+                // Rellenar automáticamente los campos de latitud y longitud
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                
+                // Mostrar popup temporal con las coordenadas
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`<b>Coordenadas seleccionadas:</b><br>Lat: ${lat}<br>Lng: ${lng}<br><small>¡Se llenaron automáticamente los campos!</small>`)
+                    .openOn(map);
+            });
         }
 
         // Carga las ubicaciones desde el API REST
@@ -74,30 +258,32 @@
             fetch('/api/locations')
                 .then(response => response.json())
                 .then(data => {
-                    // Clear existing markers
-                    markers.forEach(marker => marker.setMap(null));
+                    // Limpiar marcadores existentes
+                    markers.forEach(marker => map.removeLayer(marker));
                     markers = [];
                     
-                    // Add new markers
+                    // Agregar nuevos marcadores
                     data.forEach(location => {
-                        const marker = new google.maps.Marker({
-                            position: {lat: location.latitude, lng: location.longitude},
-                            map: map,
-                            title: location.name
-                        });
-                        
-                        const infoWindow = new google.maps.InfoWindow({
-                            content: `<h4>${location.name}</h4><p>${location.description || 'No description'}</p>`
-                        });
-                        
-                        marker.addListener('click', () => {
-                            infoWindow.open(map, marker);
-                        });
+                        const marker = L.marker([location.latitude, location.longitude])
+                            .addTo(map)
+                            .bindPopup(`
+                                <div style="text-align: center;">
+                                    <h4 style="margin: 5px 0; color: #333;">${location.name}</h4>
+                                    <p style="margin: 5px 0;">${location.description || 'Sin descripción'}</p>
+                                    <small style="color: #666;">Lat: ${location.latitude}, Lng: ${location.longitude}</small>
+                                </div>
+                            `);
                         
                         markers.push(marker);
                     });
                     
-                    // Update locations list
+                    // Ajustar la vista para mostrar todas las ubicaciones
+                    if (data.length > 0) {
+                        const group = new L.featureGroup(markers);
+                        map.fitBounds(group.getBounds().pad(0.1));
+                    }
+                    
+                    // Actualizar lista de ubicaciones
                     updateLocationsList(data);
                 })
                 .catch(error => console.error('Error loading locations:', error));
@@ -109,18 +295,26 @@
             locationsList.innerHTML = '';
             
             if (locations.length === 0) {
-                locationsList.innerHTML = '<p>No locations added yet.</p>';
+                locationsList.innerHTML = '<p style="color: #666; font-style: italic;">No hay ubicaciones todavía. ¡Agrega una haciendo clic en el mapa!</p>';
                 return;
             }
             
-            locations.forEach(location => {
+            locations.forEach((location, index) => {
                 const div = document.createElement('div');
                 div.className = 'location-item';
+                div.style.cursor = 'pointer';
                 div.innerHTML = `
-                    <strong>${location.name}</strong><br>
-                    ${location.description || 'No description'}<br>
-                    <small>Lat: ${location.latitude}, Lng: ${location.longitude}</small>
+                    <strong style="color: #007bff;">${location.name}</strong><br>
+                    <span>${location.description || 'Sin descripción'}</span><br>
+                    <small style="color: #666;">📍 Lat: ${location.latitude}, Lng: ${location.longitude}</small>
                 `;
+                
+                // Agregar evento click para centrar el mapa en la ubicación
+                div.addEventListener('click', () => {
+                    map.setView([location.latitude, location.longitude], 15);
+                    markers[index].openPopup();
+                });
+                
                 locationsList.appendChild(div);
             });
         }
@@ -137,6 +331,12 @@
                 longitude: parseFloat(formData.get('longitude'))
             };
             
+            // Validar coordenadas
+            if (isNaN(locationData.latitude) || isNaN(locationData.longitude)) {
+                alert('Por favor, introduce coordenadas válidas o haz clic en el mapa para seleccionarlas.');
+                return;
+            }
+            
             fetch('/api/locations', {
                 method: 'POST',
                 headers: {
@@ -149,37 +349,19 @@
                 console.log('Location added:', data);
                 this.reset();
                 loadLocations();
+                
+                // Mostrar mensaje de éxito
+                alert(`¡Ubicación "${data.name}" agregada exitosamente!`);
             })
-            .catch(error => console.error('Error adding location:', error));
+            .catch(error => {
+                console.error('Error adding location:', error);
+                alert('Error al agregar la ubicación. Por favor, inténtalo de nuevo.');
+            });
         });
 
-        // Carga dinámica del script de Google Maps
-        function loadGoogleMaps() {
-            if (GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') {
-                document.getElementById('map').innerHTML = 
-                    '<div style="padding: 20px; text-align: center; background-color: #fff3cd; border: 1px solid #ffeaa7;">' +
-                    '<p><strong>📌 Para ver el mapa:</strong></p>' +
-                    '<p>1. Ve a <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></p>' +
-                    '<p>2. Habilita "Maps JavaScript API"</p>' +
-                    '<p>3. Crea una API Key</p>' +
-                    '<p>4. Reemplaza "YOUR_API_KEY_HERE" en línea 9 con tu API key</p>' +
-                    '</div>';
-                return;
-            }
-            
-            // Load Google Maps script
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&libraries=&v=weekly`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        }
-
-        // Initialize map when page loads
+        // Inicializar mapa cuando se carga la página
         window.onload = function() {
-            loadGoogleMaps();
-            // Load locations regardless of map availability
-            loadLocations();
+            initMap();
         };
     </script>
 </body>
