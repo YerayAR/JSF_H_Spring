@@ -59,6 +59,7 @@
         let map;
         let markers = [];
 
+        // Inicializa el mapa de Google en la página
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 2,
@@ -68,6 +69,7 @@
             loadLocations();
         }
 
+        // Carga las ubicaciones desde el API REST
         function loadLocations() {
             fetch('/api/locations')
                 .then(response => response.json())
@@ -101,6 +103,7 @@
                 .catch(error => console.error('Error loading locations:', error));
         }
 
+        // Muestra la lista de ubicaciones debajo del mapa
         function updateLocationsList(locations) {
             const locationsList = document.getElementById('locationsList');
             locationsList.innerHTML = '';
@@ -122,6 +125,7 @@
             });
         }
 
+        // Maneja el envío del formulario para crear nuevas ubicaciones
         document.getElementById('locationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -149,7 +153,7 @@
             .catch(error => console.error('Error adding location:', error));
         });
 
-        // Function to load Google Maps
+        // Carga dinámica del script de Google Maps
         function loadGoogleMaps() {
             if (GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') {
                 document.getElementById('map').innerHTML = 
