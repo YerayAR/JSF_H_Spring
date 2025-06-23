@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<h:head>
+    <title>Location Map</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <script>
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 2,
+                center: {lat: 0, lng: 0}
+            });
+
+            fetch('/api/locations').then(r => r.json()).then(data => {
+                data.forEach(loc => {
+                    const marker = new google.maps.Marker({
+                        position: {lat: loc.latitude, lng: loc.longitude},
+                        map: map,
+                        title: loc.name
+                    });
+                });
+            });
+        }
+    </script>
+</h:head>
+<h:body onload="initMap()">
+    <h1>Locations</h1>
+    <div id="map" style="height:400px;width:100%"></div>
+</h:body>
+</html>
