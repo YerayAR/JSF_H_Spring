@@ -3,4 +3,59 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
               version="2.3">
+
+    <application>
+        <el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>
+        <resource-bundle>
+            <base-name>messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>es</supported-locale>
+        </locale-config>
+        <state-saving-method>client</state-saving-method>
+        <partial-state-saving>true</partial-state-saving>
+    </application>
+
+    <managed-bean>
+        <managed-bean-name>locationForm</managed-bean-name>
+        <managed-bean-class>com.example.demo.jsf.LocationFormBean</managed-bean-class>
+        <managed-bean-scope>view</managed-bean-scope>
+        <managed-property>
+            <property-name>repository</property-name>
+            <value>#{locationRepository}</value>
+        </managed-property>
+    </managed-bean>
+
+    <converter>
+        <converter-id>coordinateConverter</converter-id>
+        <converter-for-class>java.lang.Double</converter-for-class>
+        <converter-class>com.example.demo.jsf.converter.CoordinateConverter</converter-class>
+    </converter>
+
+    <validator>
+        <validator-id>latitudeValidator</validator-id>
+        <validator-class>com.example.demo.jsf.validator.LatitudeValidator</validator-class>
+    </validator>
+    <validator>
+        <validator-id>longitudeValidator</validator-id>
+        <validator-class>com.example.demo.jsf.validator.LongitudeValidator</validator-class>
+    </validator>
+
+    <navigation-rule>
+        <from-view-id>/index.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>success</from-outcome>
+            <to-view-id>/index.xhtml</to-view-id>
+            <redirect/>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>*</from-view-id>
+        <navigation-case>
+            <from-outcome>home</from-outcome>
+            <to-view-id>/index.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
 </faces-config>
