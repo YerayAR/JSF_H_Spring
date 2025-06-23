@@ -8,6 +8,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/locations")
+/**
+ * Controlador REST para gestionar las ubicaciones.
+ */
 public class LocationController {
 
     private final LocationRepository repository;
@@ -16,11 +19,17 @@ public class LocationController {
         this.repository = repository;
     }
 
+    /**
+     * Devuelve todas las ubicaciones.
+     */
     @GetMapping
     public List<Location> all() {
         return repository.findAll();
     }
 
+    /**
+     * Guarda una nueva ubicación.
+     */
     @PostMapping
     public Location create(@RequestBody Location location) {
         return repository.save(location);
