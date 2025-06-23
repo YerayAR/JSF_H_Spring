@@ -39,7 +39,7 @@ Usuario -> Interfaz JSF/HTML -> API REST (Spring Boot) -> Hibernate/JPA -> Postg
 
 ```
 +------------+            +-----------------+             +-----------------------+           +--------------+
-| Navegador  | <--------> | Interfaz JSF/   | <---------> |  API REST             | <------> | PostgreSQL   |
+| Navegador  | <--------> | Interfaz JSF/   | <---------> |  API REST             | <------>  | PostgreSQL   |
 | Web        |            | HTML (index)    |             |  Spring Boot /        |           | (Hibernate)  |
 |            |            |                 |             |  Controladores        |           |              |
 +------------+            +-----------------+             +-----------------------+           +--------------+
