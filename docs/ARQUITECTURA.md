@@ -4,9 +4,9 @@ Este documento describe la arquitectura general de la aplicación **Location Map
 
 ## Componentes Principales
 
-1. **Interfaz de Usuario (JSF/HTML)**
+1. **Interfaz de Usuario (HTML/JavaScript)**
    - Página `index.html` ubicada en `src/main/resources/templates`.
-   - Contiene un mapa de Google y un formulario para registrar nuevas ubicaciones.
+   - Contiene un mapa interactivo con Leaflet (OpenStreetMap) y un formulario para registrar nuevas ubicaciones.
    - Realiza peticiones HTTP al API REST para consultar o crear ubicaciones.
 
 2. **Lógica de Negocio (Spring Boot)**
@@ -26,7 +26,7 @@ Este documento describe la arquitectura general de la aplicación **Location Map
 ## Flujo General
 
 ```
-Usuario -> Interfaz JSF/HTML -> API REST (Spring Boot) -> Hibernate/JPA -> PostgreSQL
+Usuario -> Interfaz HTML/JS -> API REST (Spring Boot) -> Hibernate/JPA -> PostgreSQL
 ```
 
 1. El usuario abre la página `index.html` en su navegador.
@@ -39,19 +39,19 @@ Usuario -> Interfaz JSF/HTML -> API REST (Spring Boot) -> Hibernate/JPA -> Postg
 
 ```
 +------------+            +-----------------+             +-----------------------+           +--------------+
-| Navegador  | <--------> | Interfaz JSF/   | <---------> |  API REST             | <------>  | PostgreSQL   |
-| Web        |            | HTML (index)    |             |  Spring Boot /        |           | (Hibernate)  |
+| Navegador  | <------->  | Interfaz HTML/  | <-------->  |  API REST             | <------>  | PostgreSQL   |
+| Web        |            | JS (index.html) |             |  Spring Boot /        |           | (Hibernate)  |
 |            |            |                 |             |  Controladores        |           |              |
 +------------+            +-----------------+             +-----------------------+           +--------------+
 ```
 
-Este diagrama muestra cómo el navegador interactúa con la página web (implementada con JSF o HTML), la cual se comunica con el API REST. El API utiliza Hibernate para acceder a la base de datos PostgreSQL.
+Este diagrama muestra cómo el navegador interactúa con la página web HTML con JavaScript, la cual se comunica con el API REST. El API utiliza Hibernate para acceder a la base de datos PostgreSQL.
 
 ## Despliegue con Docker
 
 1. **Docker Compose** define dos servicios: `web` (aplicación Java) y `db` (PostgreSQL).
-2. `docker-compose up --build` compila la aplicación y levanta ambos contenedores.
-3. La aplicación queda disponible en `http://localhost:8080/index.xhtml` (o `index.html`).
+2. `docker compose up --build -d` compila la aplicación y levanta ambos contenedores en segundo plano.
+3. La aplicación queda disponible en `http://localhost:8080/`.
 
 ## Archivos Relevantes
 

@@ -39,5 +39,5 @@ Extiende `JpaRepository<Location, Long>` y hereda las operaciones CRUD básicas.
 
 - La aplicación está pensada para ejecutarse en contenedores Docker junto con una base de datos PostgreSQL definida en `docker-compose.yml`.
 - `application.properties` configura la conexión a la base de datos y el comportamiento de Hibernate.
-- `index.html` contiene código JavaScript que llama a la API REST para mostrar y añadir ubicaciones en un mapa de Google.
+- `index.html` contiene código JavaScript que llama a la API REST para mostrar y añadir ubicaciones en un mapa interactivo usando Leaflet y OpenStreetMap.
 
